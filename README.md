@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://github.com/owpk/jr-test-task/blob/master/img/screen.png" title="admin panel" width="350" height="350"/>
+  <img src="https://github.com/owpk/java-rush-test-task/blob/master/img/screen.png" title="admin panel" width="350" height="350"/>
 </p>
 
 <h2> Play with docker  </h2>
