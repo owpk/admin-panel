@@ -11,7 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 import java.util.Map;
@@ -44,8 +45,7 @@ public class PlayerControllerImpl implements PlayerControllerApi {
     @Override
     public Player createPlayer(Player player) {
         if (!ReflectionEntityUtils.isEmpty(player)) {
-            CustomPlayerValidator.validate(player);
-            CustomPlayerValidator.evalAndSetPlayerLevel(player);
+            new CustomPlayerValidator(player).validate();
             return playerService.saveOrUpdate(player);
         }
         throw new ValidationException("Empty body");
@@ -60,8 +60,7 @@ public class PlayerControllerImpl implements PlayerControllerApi {
     @Override
     public Player updatePlayer(Long id, Player player) {
         validateId(id);
-        CustomPlayerValidator.validate(player);
-        CustomPlayerValidator.evalAndSetPlayerLevel(player);
+        new CustomPlayerValidator(player).validate();
         return playerService.update(id, player);
     }
 

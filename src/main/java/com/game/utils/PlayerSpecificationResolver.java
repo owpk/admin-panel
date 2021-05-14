@@ -28,7 +28,7 @@ public class PlayerSpecificationResolver {
         appendIfContains("title", (r, cq, cb) ->
                 cb.like(r.get("title"), getFormattedPattern(specs.get("title"))));
 
-        appendIfContains( "race",(r, cq, cb) ->
+        appendIfContains("race", (r, cq, cb) ->
                 cb.equal(r.get("race"), getRace(specs.get("race"))));
 
         appendIfContains("profession", (r, cq, cb) ->
@@ -80,7 +80,7 @@ public class PlayerSpecificationResolver {
     }
 
     private Boolean convertStringToBoolean(String val) {
-         return "true".equalsIgnoreCase(val) ? Boolean.TRUE :
+        return "true".equalsIgnoreCase(val) ? Boolean.TRUE :
                 "false".equalsIgnoreCase(val) ? Boolean.FALSE : null;
     }
 

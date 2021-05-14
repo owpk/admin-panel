@@ -1,38 +1,63 @@
+/**
+ * UNUSED --
+ */
+
 package com.game.dto;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.game.entity.Player;
-import com.game.entity.Race;
+import com.game.utils.CustomPlayerValidator;
 
 import java.util.Date;
 
 @JsonAutoDetect
 public class PlayerDto {
 
-    private Long id;
+    @JsonIgnoreProperties
+    private final Long id;
 
-    private String name;
+    @JsonIgnoreProperties
+    private final String name;
 
-    private String title;
+    @JsonIgnoreProperties
+    private final String title;
 
-    private String race;
+    @JsonIgnoreProperties
+    private final String race;
 
-    private String profession;
+    @JsonIgnoreProperties
+    private final String profession;
 
-    private Integer experience;
+    @JsonIgnoreProperties
+    private final Integer experience;
 
-    private Integer level;
+    @JsonIgnoreProperties
+    private final Integer level;
 
-    private Integer untilNextLevel;
+    @JsonIgnoreProperties
+    private final Integer untilNextLevel;
 
-    private Date birthday;
+    @JsonIgnoreProperties
+    @JsonFormat(pattern = "dd-MM-yyyy")
+    private final Date birthday;
 
-    private Boolean banned;
+    @JsonIgnoreProperties
+    private final String banned;
 
     public PlayerDto(Player player) {
-        this.id = player.getId();
-        this.name = player.getName();
-        this.title = player.getTitle();
-        this.race = player.getRace().name();
+        CustomPlayerValidator validator = new CustomPlayerValidator(player);
+
+        this.id = player.getId() != null ? player.getId() : 0;
+        this.name = player.getName() != null ? player.getName() : "Unnamed";
+        this.title = player.getTitle() != null ? player.getTitle() : "Untitled";
+        this.race = player.getRace() != null ? player.getRace().name() : " -- ";
+        this.profession = player.getProfession() != null ? player.getProfession().name() : " -- ";
+        this.experience = player.getExperience() != null ? player.getExperience() : 0;
+        this.level = validator.evalPlayerLevel();
+        this.untilNextLevel = validator.evalPlayerExpUntilNextLvl(level);
+        this.birthday = player.getBirthday() != null ? player.getBirthday() : new Date();
+        this.banned = player.getBanned() != null ? player.getBanned() ? "Active" : "Banned" : "Active";
     }
 }

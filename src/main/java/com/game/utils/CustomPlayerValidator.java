@@ -3,7 +3,6 @@ package com.game.utils;
 import com.game.entity.Player;
 import com.game.exception.ValidationException;
 
-import javax.persistence.criteria.CriteriaBuilder;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -13,15 +12,31 @@ public class CustomPlayerValidator {
     public static final int EXP_MAX_VAL = 10_000_000;
     public static final int YEAR_MIN = 2000;
     public static final int YEAR_MAX = 3000;
+    private final Player player;
 
-    public static void validate(Player player) throws ValidationException {
+    public CustomPlayerValidator(Player player) {
         if (player == null) throw new ValidationException("Invalid player data is null");
+        this.player = player;
+    }
+
+    /**
+     * Проверка полей title, name, experience, birthday на валдиность.
+     * Автоматически обновляет поле banned на false если не указано иное значение и
+     * поля level и untilNextLevel согласно матодам:
+     * {@link CustomPlayerValidator#evalPlayerLevel()}
+     * {@link CustomPlayerValidator#evalPlayerExpUntilNextLvl(Integer)} ()}
+     *
+     * @throws ValidationException
+     */
+    public void validate() throws ValidationException {
         if (player.getBanned() == null)
             player.setBanned(false);
         validateName(player.getName());
         validateTitle(player.getTitle());
         validateExp(player.getExperience());
         validateBirthday(player.getBirthday());
+        player.setLevel(evalPlayerLevel());
+        player.setUntilNextLevel(evalPlayerExpUntilNextLvl(player.getLevel()));
     }
 
     public static void validateName(String name) {
@@ -53,15 +68,17 @@ public class CustomPlayerValidator {
         return field != null && (field.isEmpty() || field.length() > size);
     }
 
-    public static void evalAndSetPlayerLevel(Player player) {
-        if (player != null) {
-            Integer exp = player.getExperience();
-            if (exp != null) {
-                int lvl = (int) ((Math.sqrt(2500 + 200 * exp) - 50) / 100);
-                int expToNextLvl = 50 * (lvl + 1) * (lvl + 2) - exp;
-                player.setLevel(lvl);
-                player.setUntilNextLevel(expToNextLvl);
-            }
+    public Integer evalPlayerExpUntilNextLvl(Integer lvl) {
+        if (lvl == null) return null;
+        return 50 * (lvl + 1) * (lvl + 2) -
+                (player.getExperience() != null ? player.getExperience() : 0);
+    }
+
+    public Integer evalPlayerLevel() {
+        Integer exp = player.getExperience();
+        if (exp != null) {
+            return (int) ((Math.sqrt(2500 + 200 * exp) - 50) / 100);
         }
+        return null;
     }
 }

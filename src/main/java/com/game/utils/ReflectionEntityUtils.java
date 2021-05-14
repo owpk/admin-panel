@@ -1,5 +1,8 @@
 package com.game.utils;
 
+
+import org.apache.log4j.Logger;
+
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Map;
@@ -7,9 +10,34 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class ReflectionEntityUtils {
+    private static final Logger log = Logger.getLogger(ReflectionEntityUtils.class);
 
+    /**
+     * Заменяет все значения полей объекта {@param orig}
+     * значениями из полей объекта {@param newData} без исключений.
+     *
+     * @param orig
+     * @param newData
+     * @param <T>
+     * @return
+     */
     public static <T> T updateAllFields(T orig, T newData) {
-            if ((orig == null || newData == null) ||
+        return updateAllFields(orig, newData, x -> false);
+    }
+
+    /**
+     * Заменяет все значения полей объекта {@param orig}
+     * значениями из полей объекта {@param newData},
+     * исключая поля определенные предикатом {@param except}
+     *
+     * @param orig
+     * @param newData
+     * @param except
+     * @param <T>
+     * @return
+     */
+    public static <T> T updateAllFields(T orig, T newData, Predicate<Field> except) {
+        if ((orig == null || newData == null) ||
                 (orig.getClass() != newData.getClass())) {
             throw new UnsupportedOperationException();
         }
@@ -19,7 +47,7 @@ public class ReflectionEntityUtils {
                         .collect(Collectors.toMap(Field::getName, x -> x));
         for (Field field : updated) {
             field.setAccessible(true);
-            if (field.getName().equals("id")) continue;
+            if (except.test(field)) continue;
             try {
                 Object val = field.get(newData);
                 if (val != null) {
@@ -28,7 +56,7 @@ public class ReflectionEntityUtils {
                     updatedField.set(orig, val);
                 }
             } catch (IllegalAccessException e) {
-                e.printStackTrace();
+                log.error(e);
             }
         }
         return orig;
@@ -38,11 +66,19 @@ public class ReflectionEntityUtils {
         return isEmpty(obj, x -> true);
     }
 
-    public static <T> boolean isEmpty(T obj, Predicate<Field> exclude) {
+    /**
+     * Проверяет все ли поля в объекте {@param obj} пустые
+     *
+     * @param obj
+     * @param except
+     * @param <T>
+     * @return
+     */
+    public static <T> boolean isEmpty(T obj, Predicate<Field> except) {
         Field[] fields = obj.getClass().getDeclaredFields();
         try {
             for (Field field : fields) {
-                if (exclude.test(field)) {
+                if (except.test(field)) {
                     field.setAccessible(true);
                     Object val = field.get(obj);
                     if (val != null) {
@@ -51,7 +87,7 @@ public class ReflectionEntityUtils {
                 }
             }
         } catch (IllegalArgumentException | IllegalAccessException e) {
-            e.printStackTrace();
+            log.error(e);
             return false;
         }
         return true;
