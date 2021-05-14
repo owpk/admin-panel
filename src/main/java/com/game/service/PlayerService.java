@@ -1,6 +1,7 @@
 package com.game.service;
 
 import com.game.entity.Player;
+import com.game.exception.ResourceNotFoundException;
 import com.game.repository.PlayerRepository;
 import com.game.utils.ReflectionEntityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,17 +34,18 @@ public class PlayerService {
 
     public Player findById(Long id) {
         return playerRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Resource not found by id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Resource not found by id: " + id));
     }
 
     public Player update(Long id, Player updatedData) {
-        try {
-            Player original = findById(id);
-            Player updated = ReflectionEntityUtils.updateAllFields(original, updatedData);
-            return playerRepository.save(updated);
-        } catch (Exception e) {
-            throw new RuntimeException(
-                    String.format("Can't update data %s, entity with id: %d", updatedData, id));
-        }
+        Player original = findById(id);
+        Player updated = ReflectionEntityUtils.updateAllFields(original, updatedData);
+        return playerRepository.save(updated);
+    }
+
+    public Player delete(Long id) {
+        Player p = findById(id);
+        playerRepository.delete(p);
+        return p;
     }
 }

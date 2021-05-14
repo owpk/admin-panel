@@ -1,5 +1,7 @@
 package com.game.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import javax.persistence.*;
 import java.util.Date;
 
@@ -8,7 +10,7 @@ import java.util.Date;
 public class Player {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(name = "name")
@@ -37,7 +39,7 @@ public class Player {
     @Column(name = "birthday")
     private Date birthday;
 
-    @Column(name = "banned")
+    @Column(name = "banned", columnDefinition = "TINYINT(1)")
     private Boolean banned;
 
     public Long getId() {

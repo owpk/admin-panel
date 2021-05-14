@@ -1,10 +1,13 @@
 package com.game.utils;
 
 import com.game.entity.Player;
+import com.game.entity.Profession;
+import com.game.entity.Race;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.jpa.domain.Specification;
 
+import java.util.Date;
 import java.util.Map;
 
 public class PlayerSpecificationResolver {
@@ -26,40 +29,61 @@ public class PlayerSpecificationResolver {
                 cb.like(r.get("title"), getFormattedPattern(specs.get("title"))));
 
         appendIfContains( "race",(r, cq, cb) ->
-                cb.like(r.get("race"), getFormattedPattern(specs.get("race"))));
+                cb.equal(r.get("race"), getRace(specs.get("race"))));
 
         appendIfContains("profession", (r, cq, cb) ->
-                cb.like(r.get("profession"), getFormattedPattern(specs.get("profession"))));
+                cb.equal(r.get("profession"), getProfession(specs.get("profession"))));
 
         appendIfContains("after", (r, cq, cb) ->
-                cb.greaterThan(r.get("birthday"), specs.get("after")));
+                cb.greaterThan(r.get("birthday"), parseDate(specs.get("after"))));
 
         appendIfContains("before", (r, cq, cb) ->
-                cb.lessThan(r.get("birthday"), specs.get("before")));
+                cb.lessThan(r.get("birthday"), parseDate(specs.get("before"))));
 
         appendIfContains("banned", (r, cq, cb) ->
-                cb.equal(r.get("banned"), specs.get("banned")));
+                cb.equal(r.get("banned"), convertStringToBoolean(specs.get("banned"))));
 
         appendIfContains("minExperience", (r, cq, cb) ->
-                cb.greaterThan(r.get("experience"), specs.get("minExperience")));
+                cb.greaterThan(r.get("experience"), convertToInteger(specs.get("minExperience"))));
 
         appendIfContains("maxExperience", (r, cq, cb) ->
-                cb.lessThan(r.get("experience"), specs.get("maxExperience")));
+                cb.lessThan(r.get("experience"), convertToInteger(specs.get("maxExperience"))));
 
         appendIfContains("minLevel", (r, cq, cb) ->
-                cb.greaterThan(r.get("level"), specs.get("minLevel")));
+                cb.greaterThan(r.get("level"), convertToInteger(specs.get("minLevel"))));
 
         appendIfContains("maxLevel", (r, cq, cb) ->
-                cb.lessThan(r.get("level"), specs.get("maxLevel")));
+                cb.lessThan(r.get("level"), convertToInteger(specs.get("maxLevel"))));
 
         return defaultSpec;
+    }
+
+    private Profession getProfession(String prof) {
+        return Profession.valueOf(prof);
+    }
+
+    private Race getRace(String race) {
+        return Race.valueOf(race);
+    }
+
+    private Integer convertToInteger(String value) {
+        return Integer.parseInt(value);
+    }
+
+    private Date parseDate(String date) {
+        long time = Long.parseLong(date);
+        return new Date(time);
     }
 
     private String getFormattedPattern(String value) {
         return String.format("%%%s%%", value);
     }
 
-    // TODO set lang to java 11 and switch "specs.get(key)..." to "specs.get(key).isBlank();"
+    private Boolean convertStringToBoolean(String val) {
+         return "true".equalsIgnoreCase(val) ? Boolean.TRUE :
+                "false".equalsIgnoreCase(val) ? Boolean.FALSE : null;
+    }
+
     private void appendIfContains(String key, Specification<Player> specification) {
         if (specs.containsKey(key)) {
             if (specs.get(key) != null && !specs.get(key).trim().isEmpty())
