@@ -1,0 +1,36 @@
+version: "3.9"
+
+services:
+  db:
+    image: mysql:5.7
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./db:/docker-entrypoint-initdb.d
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: rpg
+    ports:
+      - "3306:3306"
+    networks:
+      - sub-n
+
+  tomcat:
+    restart: unless-stopped
+    build: .
+    ports:
+      - "80:8080"
+    links:
+      - db
+    depends_on:
+      - db
+    networks:
+      - sub-n
+
+volumes:
+  db_data: {}
+
+networks:
+  sub-n:
+    driver: bridge
+
